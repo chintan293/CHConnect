@@ -11,6 +11,7 @@ import { clerkMiddleware } from '@clerk/express';
 
 import User from "./models/user.model.js";
 import { connectDB } from "./lib/db.js";
+import job from "./lib/cron.js";
 
 const app = express();
 
@@ -39,4 +40,7 @@ if(fs.existsSync(publicDir)){
 app.listen(PORT, () => {
     connectDB();
     console.log("Server is up and running on PORT:", PORT);
+
+    if (process.env.NODE_ENV === "production") job.start();
+
 });
