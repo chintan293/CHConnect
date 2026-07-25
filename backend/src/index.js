@@ -2,6 +2,7 @@
 import express from "express"; // used when type = "module" in json file
 import "dotenv/config";
 
+import cors from "cors";
 import { clerkMiddleware } from '@clerk/express';
 
 import User from "./models/user.model.js";
@@ -20,9 +21,7 @@ app.get("/health", (req, res) => {
     res.status(200).json({ ok: true });
 });
 
-await connectDB();
-
 app.listen(PORT, () => {
-    
+    connectDB();
     console.log("Server is up and running on PORT:", PORT);
 });
