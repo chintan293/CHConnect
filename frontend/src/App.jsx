@@ -5,13 +5,31 @@ import ChatPage from "./pages/ChatPage.jsx";
 import AuthPage from "./pages/AuthPage.jsx"; 
 import { useAuth } from "@clerk/react";
 import PageLoader from "./components/PageLoader.jsx"; 
+import { useAuthStore } from "./store/useAuthStore.js";
+import { useEffect } from "react";
+
+import { Toaster } from "react-hot-toast";
 
 function App() {
 
   const { isSignedIn, isLoaded } = useAuth();
 
-  //todo: make this a better component
-  if(!isLoaded) return <PageLoader />;
+  //option 1
+  //const { checkAuth, isCheckingAuth, clearAuth } = useAuthStore();
+
+  //option 2 - better for performance
+  const clearAuth = useAuthStore((state) => state.clearAuth );
+  const checkAuth = useAuthStore((state) => state.checkAuth );
+  const isCheckingAuth = useAuthStore((state) => state.isCheckingAuth );
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (isSignedIn) checkAuth();
+    else clearAuth();
+  }, [checkAuth, clearAuth, isLoaded, isSignedIn]);
+
+  if(!isLoaded || ( isSignedIn && isCheckingAuth )) return <PageLoader />;
 
   return (
       <ThemeProvider>
@@ -25,6 +43,7 @@ function App() {
               element={!isSignedIn ? <AuthPage /> : <Navigate to={"/"} replace />} />
 
           </Routes>
+          <Toaster />
         </WallpaperProvider>
       </ThemeProvider>
   );
