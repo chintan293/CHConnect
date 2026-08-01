@@ -3,9 +3,9 @@
 //sequence is maintain
 
 import express from "express"; // used when type = "module" in json file
-import "dotenv/config";
 
 import cors from "cors";
+import "dotenv/config";
 
 import fs from "fs";
 import path from "path";
