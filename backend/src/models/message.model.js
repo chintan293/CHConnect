@@ -20,7 +20,18 @@ const messageSchema = new mongoose.Schema({
     video: {
         type: String,
     },
-
+    audio: {
+        type: String,
+    },
+    status: {
+        type: String,
+        enum: ["sent", "delivered", "read"],
+        default: "sent",
+    },
+    isRead: {
+        type: Boolean,
+        default: false,
+    },
     },
     { timestamps: true },
 );

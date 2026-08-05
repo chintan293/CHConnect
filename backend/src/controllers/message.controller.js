@@ -75,16 +75,30 @@ export async function sendMessage(req, res) {
 
     let imageUrl;
     let videoUrl;
+    let audioUrl;
 
     if (req.file) {
       if (!hasImageKitConfig()) {
-        return res.status(500).json({ message: "Media upload is not configured" });
+        return res.status(400).json({ message: "Media upload is not configured on server" });
       }
 
-      const url = await uploadChatMedia(req.file);
-      if (req.file.mimetype.startsWith("video/")) videoUrl = url;
-      else imageUrl = url;
+      try {
+        const url = await uploadChatMedia(req.file);
+        if (req.file.mimetype.startsWith("video/")) {
+          videoUrl = url;
+        } else if (req.file.mimetype.startsWith("audio/")) {
+          audioUrl = url;
+        } else {
+          imageUrl = url;
+        }
+      } catch (uploadErr) {
+        console.error("Media upload error:", uploadErr);
+        return res.status(400).json({ message: uploadErr.message || "Failed to upload media file" });
+      }
     }
+
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    const initialStatus = receiverSocketId ? "delivered" : "sent";
 
     const newMessage = new Message({
       senderId,
@@ -92,19 +106,44 @@ export async function sendMessage(req, res) {
       text,
       image: imageUrl,
       video: videoUrl,
+      audio: audioUrl,
+      status: initialStatus,
+      isRead: false,
     });
 
     await newMessage.save();
 
-    const receiverSocketId = getReceiverSocketId(receiverId);
-    // only send the message in realtime if user is online
+    // Send realtime message to receiver
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.error("Error in sendMessage:", error.message);
+    console.error("========== SEND MESSAGE ERROR ==========");
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+export async function markMessagesAsRead(req, res) {
+  try {
+    const { id: senderId } = req.params;
+    const receiverId = req.user._id;
+
+    await Message.updateMany(
+      { senderId, receiverId, isRead: false },
+      { $set: { isRead: true, status: "read" } }
+    );
+
+    const senderSocketId = getReceiverSocketId(senderId);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messagesRead", { readerId: receiverId, senderId });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error in markMessagesAsRead:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

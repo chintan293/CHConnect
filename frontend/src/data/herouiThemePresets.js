@@ -61,6 +61,12 @@ export const HERO_UI_THEME_PRESETS = [
       "radial-gradient(circle at 30% 25%, oklch(0.58 0.2 275), oklch(0.48 0.18 275) 55%, oklch(0.4 0.16 275))",
   },
   {
+    id: "whatsapp",
+    label: "WhatsApp",
+    swatch:
+      "radial-gradient(circle at 30% 25%, #25D366, #128C7E 55%, #075E54)",
+  },
+  {
     id: "rabbit",
     label: "Rabbit",
     swatch:

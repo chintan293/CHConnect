@@ -93,6 +93,16 @@
     --accent-foreground: var(--snow);
   }
 
+  /* --- WhatsApp --- */
+  html[data-theme="light"][data-theme-preset="whatsapp"] {
+    --accent: #128c7e;
+    --accent-foreground: #ffffff;
+  }
+  html[data-theme="dark"][data-theme-preset="whatsapp"] {
+    --accent: #00a884;
+    --accent-foreground: #111b21;
+  }
+
   /* --- Rabbit --- */
   html[data-theme="light"][data-theme-preset="rabbit"] {
     --accent: oklch(0.72 0.16 65);

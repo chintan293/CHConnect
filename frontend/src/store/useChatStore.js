@@ -21,6 +21,7 @@ export const useChatStore = create(
       composerText: "",
       isSoundEnabled: true,
       isSendingMedia: false,
+      typingUsers: {},
 
       getUsers: async () => {
         set({ isUsersLoading: true });
@@ -58,10 +59,25 @@ export const useChatStore = create(
         try {
           const res = await axiosInstance.get(`/messages/${userId}`);
           set({ messages: res.data });
+          get().markMessagesAsRead(userId);
         } catch (error) {
           toast.error(error.response?.data?.message || "Failed to load messages");
         } finally {
           set({ isMessagesLoading: false });
+        }
+      },
+
+      markMessagesAsRead: async (senderId) => {
+        if (!senderId) return;
+        try {
+          await axiosInstance.put(`/messages/read/${senderId}`);
+          set((state) => ({
+            messages: state.messages.map((msg) =>
+              String(msg.senderId) === String(senderId) ? { ...msg, isRead: true, status: "read" } : msg
+            ),
+          }));
+        } catch (error) {
+          console.log("Failed to mark messages as read", error);
         }
       },
 
@@ -80,6 +96,20 @@ export const useChatStore = create(
         }
       },
 
+      sendTyping: (receiverId) => {
+        const socket = useAuthStore.getState().socket;
+        if (socket && receiverId) {
+          socket.emit("typing", { receiverId });
+        }
+      },
+
+      sendStopTyping: (receiverId) => {
+        const socket = useAuthStore.getState().socket;
+        if (socket && receiverId) {
+          socket.emit("stopTyping", { receiverId });
+        }
+      },
+
       subscribeToMessages: (userId) => {
         if (!userId) return;
 
@@ -87,19 +117,45 @@ export const useChatStore = create(
         if (!socket) return;
 
         socket.off("newMessage");
+        socket.off("typing");
+        socket.off("stopTyping");
+        socket.off("messagesRead");
+
         socket.on("newMessage", (newMessage) => {
-          // if im not the receiver don't do anything just return
           if (String(newMessage.senderId) !== String(userId)) return;
 
-          set({ messages: [...get().messages, newMessage] });
-
+          set((state) => ({ messages: [...state.messages, newMessage] }));
+          get().markMessagesAsRead(userId);
           get().getConversations();
+        });
+
+        socket.on("typing", ({ senderId }) => {
+          set((state) => ({
+            typingUsers: { ...state.typingUsers, [senderId]: true },
+          }));
+        });
+
+        socket.on("stopTyping", ({ senderId }) => {
+          set((state) => ({
+            typingUsers: { ...state.typingUsers, [senderId]: false },
+          }));
+        });
+
+        socket.on("messagesRead", ({ readerId }) => {
+          if (String(readerId) === String(userId)) {
+            set((state) => ({
+              messages: state.messages.map((msg) => ({ ...msg, isRead: true, status: "read" })),
+            }));
+          }
         });
       },
 
       unsubscribeFromMessages: () => {
         const socket = useAuthStore.getState().socket;
         socket?.off("newMessage");
+        socket?.off("typing");
+        socket?.off("stopTyping");
+        socket?.off("messagesRead");
       },
 
       setSelectedUser: (selectedUser) => set({ selectedUser }),
