@@ -6,6 +6,7 @@ import AuthPage from "./pages/AuthPage.jsx";
 import { useAuth } from "@clerk/react";
 import PageLoader from "./components/PageLoader.jsx"; 
 import { useAuthStore } from "./store/useAuthStore.js";
+import { useChatStore } from "./store/useChatStore.js";
 import { useEffect } from "react";
 
 import { Toaster } from "react-hot-toast";
@@ -25,8 +26,17 @@ function App() {
   useEffect(() => {
     if (!isLoaded) return;
 
-    if (isSignedIn) checkAuth();
-    else clearAuth();
+    if (isSignedIn) {
+      checkAuth();
+      useChatStore.getState().initGlobalListener();
+    } else {
+      clearAuth();
+      useChatStore.getState().cleanupGlobalListener();
+    }
+
+    return () => {
+      useChatStore.getState().cleanupGlobalListener();
+    };
   }, [checkAuth, clearAuth, isLoaded, isSignedIn]);
 
   if(!isLoaded || ( isSignedIn && isCheckingAuth )) return <PageLoader />;

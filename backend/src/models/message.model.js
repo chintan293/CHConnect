@@ -23,6 +23,23 @@ const messageSchema = new mongoose.Schema({
     audio: {
         type: String,
     },
+    fileUrl: {
+        type: String,
+    },
+    fileName: {
+        type: String,
+    },
+    fileSize: {
+        type: Number,
+    },
+    mimeType: {
+        type: String,
+    },
+    clientId: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
     status: {
         type: String,
         enum: ["sent", "delivered", "read"],

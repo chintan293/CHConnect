@@ -21,7 +21,11 @@ export const useChatStore = create(
       composerText: "",
       isSoundEnabled: true,
       isSendingMedia: false,
+      isSendingMedia: false,
+      uploadProgress: 0,
       typingUsers: {},
+
+      setUploadProgress: (uploadProgress) => set({ uploadProgress }),
 
       getUsers: async () => {
         set({ isUsersLoading: true });
@@ -81,18 +85,61 @@ export const useChatStore = create(
         }
       },
 
-      sendMessage: async (messageData) => {
+      sendMessage: async (messageData, clientId = null) => {
         const { selectedUser, messages } = get();
         if (!selectedUser) return false;
 
+        const isFormData = messageData instanceof FormData;
+
         try {
-          const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-          set({ messages: [...messages, res.data], composerText: "" });
+          const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData, {
+            onUploadProgress: (progressEvent) => {
+              if (isFormData) {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                get().setUploadProgress(percentCompleted);
+              }
+            }
+          });
+
+          const savedMessage = res.data;
+
+          set((state) => {
+            // Reconcile optimistic message
+            let newMessages = [...state.messages];
+            if (clientId) {
+              const optIndex = newMessages.findIndex((msg) => msg.clientId === clientId);
+              if (optIndex !== -1) {
+                newMessages[optIndex] = savedMessage;
+              } else {
+                newMessages.push(savedMessage);
+              }
+            } else {
+              // Deduplicate just in case
+              const exists = newMessages.find(m => m._id === savedMessage._id);
+              if(!exists) newMessages.push(savedMessage);
+            }
+            return { messages: newMessages, composerText: "" };
+          });
           get().getConversations();
           return true;
         } catch (error) {
+          console.error("Failed to send message", error);
           toast.error(error.response?.data?.message || "Failed to send message");
+          
+          set((state) => {
+             if (clientId) {
+               return {
+                 messages: state.messages.map(msg => 
+                    msg.clientId === clientId ? { ...msg, status: "failed" } : msg
+                 )
+               }
+             }
+             return state;
+          });
+
           return false;
+        } finally {
+          if (isFormData) get().setUploadProgress(0);
         }
       },
 
@@ -124,9 +171,13 @@ export const useChatStore = create(
         socket.on("newMessage", (newMessage) => {
           if (String(newMessage.senderId) !== String(userId)) return;
 
-          set((state) => ({ messages: [...state.messages, newMessage] }));
+          set((state) => {
+             // Prevent duplicates via clientId or _id
+             const exists = state.messages.some(m => m._id === newMessage._id || (m.clientId && m.clientId === newMessage.clientId));
+             if (exists) return state;
+             return { messages: [...state.messages, newMessage] };
+          });
           get().markMessagesAsRead(userId);
-          get().getConversations();
         });
 
         socket.on("typing", ({ senderId }) => {
@@ -158,6 +209,25 @@ export const useChatStore = create(
         socket?.off("messagesRead");
       },
 
+      initGlobalListener: () => {
+         const socket = useAuthStore.getState().socket;
+         if (!socket) return;
+         
+         socket.off("newMessage", get()._handleGlobalNewMessage);
+         socket.on("newMessage", get()._handleGlobalNewMessage);
+      },
+
+      _handleGlobalNewMessage: (newMessage) => {
+         get().getConversations();
+      },
+
+      cleanupGlobalListener: () => {
+         const socket = useAuthStore.getState().socket;
+         if (socket) {
+           socket.off("newMessage", get()._handleGlobalNewMessage);
+         }
+      },
+
       setSelectedUser: (selectedUser) => set({ selectedUser }),
 
       setActiveConversationId: (activeConversationId) => {
@@ -180,18 +250,64 @@ export const useChatStore = create(
         const messageText = get().composerText.trim();
         if (!conversationId || !messageText) return false;
 
-        return get().sendMessage({ text: messageText });
+        const myId = useAuthStore.getState().user?._id;
+        const clientId = `tmp_${Date.now()}_${Math.random()}`;
+        const optimisticMsg = {
+          _id: clientId,
+          clientId,
+          senderId: myId,
+          receiverId: conversationId,
+          text: messageText,
+          status: "sending",
+          createdAt: new Date().toISOString(),
+        };
+
+        set((state) => ({
+          messages: [...state.messages, optimisticMsg],
+          composerText: "",
+        }));
+
+        return get().sendMessage({ text: messageText, clientId }, clientId);
       },
 
       sendMediaMessage: async ({ conversationId, file }) => {
         if (!conversationId || !file) return false;
 
+        const clientId = `tmp_${Date.now()}_${Math.random()}`;
         const formData = new FormData();
         formData.append("media", file);
+        formData.append("clientId", clientId);
 
-        set({ isSendingMedia: true });
+        const myId = useAuthStore.getState().user?._id;
+        // Basic optimistic UI for media - only text is "Sending media...", since we don't have the URL yet.
+        const isImage = file.type.startsWith("image/");
+        const isVideo = file.type.startsWith("video/");
+        const isAudio = file.type.startsWith("audio/");
+        
+        let optimisticMsg = {
+          _id: clientId,
+          clientId,
+          senderId: myId,
+          receiverId: conversationId,
+          status: "sending",
+          createdAt: new Date().toISOString(),
+        };
+
+        // If it's an image, we can try to create a local preview blob
+        if (isImage) {
+           optimisticMsg.imageUrl = URL.createObjectURL(file);
+        } else {
+           optimisticMsg.fileName = file.name;
+           optimisticMsg.fileSize = file.size;
+        }
+
+        set((state) => ({
+          messages: [...state.messages, optimisticMsg],
+        }));
+
+        set({ isSendingMedia: true, uploadProgress: 0 });
         try {
-          return await get().sendMessage(formData);
+          return await get().sendMessage(formData, clientId);
         } finally {
           set({ isSendingMedia: false });
         }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, CheckCheck } from "lucide-react";
+import { Check, CheckCheck, FileIcon, Clock, AlertCircle, Download } from "lucide-react";
 import { withTransform } from "../../lib/imagekit";
 import { MessageVideo } from "./MessageVideo";
 import { MessageAudio } from "./MessageAudio";
@@ -12,6 +12,7 @@ export function MessageBubble({ message }) {
   const hasImage = Boolean(message.imageUrl);
   const hasVideo = Boolean(message.videoUrl);
   const hasAudio = Boolean(message.audioUrl);
+  const hasFile = Boolean(message.fileUrl) || Boolean(message.fileName && !hasImage && !hasVideo && !hasAudio);
 
   const status = message.status || (message.isRead ? "read" : "sent");
 
@@ -51,6 +52,31 @@ export function MessageBubble({ message }) {
 
         {hasAudio ? <MessageAudio src={message.audioUrl} isOwnMessage={isOwnMessage} /> : null}
 
+        {hasFile ? (
+          <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/50 p-3 mb-1.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/20 text-accent">
+              <FileIcon className="h-5 w-5" />
+            </div>
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <span className="truncate text-sm font-medium">{message.fileName || "Unknown file"}</span>
+              <span className="text-xs text-muted-foreground">
+                {message.fileSize ? `${(message.fileSize / 1024 / 1024).toFixed(2)} MB` : "Unknown size"}
+              </span>
+            </div>
+            {message.fileUrl ? (
+              <a
+                href={message.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted"
+                download
+              >
+                <Download className="h-4 w-4 text-foreground/80" />
+              </a>
+            ) : null}
+          </div>
+        ) : null}
+
         {message.text ? (
           <p className="whitespace-pre-wrap wrap-break-word">{message.text}</p>
         ) : null}
@@ -67,9 +93,13 @@ export function MessageBubble({ message }) {
                 <CheckCheck className="size-3.5 text-sky-400 dark:text-sky-300 stroke-[2.5]" aria-label="Read" />
               ) : status === "delivered" ? (
                 <CheckCheck className="size-3.5 opacity-80 stroke-[2]" aria-label="Delivered" />
-              ) : (
+              ) : status === "sent" ? (
                 <Check className="size-3.5 opacity-70 stroke-[2]" aria-label="Sent" />
-              )}
+              ) : status === "sending" ? (
+                <Clock className="size-3.5 opacity-60 stroke-[2]" aria-label="Sending" />
+              ) : status === "failed" ? (
+                <AlertCircle className="size-3.5 text-red-500 stroke-[2]" aria-label="Failed" />
+              ) : null}
             </span>
           ) : null}
         </div>

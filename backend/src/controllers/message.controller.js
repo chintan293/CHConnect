@@ -69,13 +69,25 @@ export async function getMessages(req, res) {
 
 export async function sendMessage(req, res) {
   try {
-    const { text } = req.body;
+    const { text, clientId } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
+
+    // Check for duplicate message if clientId is provided
+    if (clientId) {
+      const existingMessage = await Message.findOne({ clientId });
+      if (existingMessage) {
+        return res.status(200).json(existingMessage); // Return existing to prevent duplicate
+      }
+    }
 
     let imageUrl;
     let videoUrl;
     let audioUrl;
+    let fileUrl;
+    let fileName;
+    let fileSize;
+    let mimeType;
 
     if (req.file) {
       if (!hasImageKitConfig()) {
@@ -84,13 +96,25 @@ export async function sendMessage(req, res) {
 
       try {
         const url = await uploadChatMedia(req.file);
-        if (req.file.mimetype.startsWith("video/")) {
+        
+        const isImage = req.file.mimetype.startsWith("image/");
+        const isVideo = req.file.mimetype.startsWith("video/");
+        const isAudio = req.file.mimetype.startsWith("audio/");
+
+        if (isVideo) {
           videoUrl = url;
-        } else if (req.file.mimetype.startsWith("audio/")) {
+        } else if (isAudio) {
           audioUrl = url;
-        } else {
+        } else if (isImage) {
           imageUrl = url;
+        } else {
+          fileUrl = url;
         }
+        
+        fileName = req.file.originalname;
+        fileSize = req.file.size;
+        mimeType = req.file.mimetype;
+        
       } catch (uploadErr) {
         console.error("Media upload error:", uploadErr);
         return res.status(400).json({ message: uploadErr.message || "Failed to upload media file" });
@@ -107,6 +131,11 @@ export async function sendMessage(req, res) {
       image: imageUrl,
       video: videoUrl,
       audio: audioUrl,
+      fileUrl,
+      fileName,
+      fileSize,
+      mimeType,
+      clientId,
       status: initialStatus,
       isRead: false,
     });
@@ -122,6 +151,13 @@ export async function sendMessage(req, res) {
   } catch (error) {
     console.error("========== SEND MESSAGE ERROR ==========");
     console.error(error);
+    // If it's a duplicate key error for clientId, fetch and return the message safely
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.clientId) {
+      const existingMessage = await Message.findOne({ clientId: req.body.clientId });
+      if (existingMessage) {
+        return res.status(200).json(existingMessage);
+      }
+    }
     res.status(500).json({ message: "Internal server error" });
   }
 }

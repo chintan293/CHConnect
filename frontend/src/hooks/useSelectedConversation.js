@@ -24,9 +24,14 @@ function mapUserToConversation({ user, messages, authUser, onlineUsers }) {
     role: String(message.senderId) === String(authUser?._id) ? "me" : "them",
     text: message.text || "",
     time: formatMessageTime(message.createdAt),
-    imageUrl: message.image,
-    videoUrl: message.video,
-    audioUrl: message.audio,
+    imageUrl: message.image || message.imageUrl, // Handle both in case of inconsistencies
+    videoUrl: message.video || message.videoUrl,
+    audioUrl: message.audio || message.audioUrl,
+    fileUrl: message.fileUrl,
+    fileName: message.fileName,
+    fileSize: message.fileSize,
+    mimeType: message.mimeType,
+    clientId: message.clientId,
     status: message.status || (message.isRead ? "read" : "sent"),
     isRead: message.isRead || false,
   }));

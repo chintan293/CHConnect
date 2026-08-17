@@ -12,6 +12,7 @@ export function ChatComposer() {
   const isSoundEnabled = useChatStore((state) => state.isSoundEnabled);
   const sendMediaMessage = useChatStore((state) => state.sendMediaMessage);
   const isSendingMedia = useChatStore((state) => state.isSendingMedia);
+  const uploadProgress = useChatStore((state) => state.uploadProgress);
   const sendTextMessage = useChatStore((state) => state.sendTextMessage);
   const setComposerText = useChatStore((state) => state.setComposerText);
   const sendTyping = useChatStore((state) => state.sendTyping);
@@ -56,6 +57,11 @@ export function ChatComposer() {
     event.target.value = "";
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+       toast.error("File is too large. Maximum allowed size is 10 MB.");
+       return;
+    }
+
     const didSendMessage = await sendMediaMessage({
       conversationId: activeConversationId,
       file,
@@ -99,7 +105,8 @@ export function ChatComposer() {
             strokeWidth={2}
             aria-hidden
           />
-          <span className="truncate">Uploading media (photo/video/audio)...</span>
+          <span className="flex-1 truncate">Uploading file...</span>
+          {uploadProgress > 0 && <span className="font-mono text-xs font-semibold tabular-nums text-accent">{uploadProgress}%</span>}
         </div>
       ) : null}
 
@@ -107,7 +114,7 @@ export function ChatComposer() {
         <input
           ref={mediaInputRef}
           type="file"
-          accept="image/*,video/*,audio/*"
+          accept="*/*"
           className="sr-only"
           disabled={isSendingMedia}
           tabIndex={-1}
