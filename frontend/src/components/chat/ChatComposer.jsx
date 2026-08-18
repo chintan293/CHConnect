@@ -82,7 +82,7 @@ export function ChatComposer() {
   }, []);
 
   return (
-    <footer className="relative shrink-0 border-t border-border px-1.5 pb-2 pt-2 sm:px-2">
+    <footer className="relative shrink-0 border-t border-border px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-2">
       {showEmojiPicker ? (
         <div className="absolute bottom-full left-3 mb-2 z-20 flex max-w-xs flex-wrap gap-1.5 rounded-2xl border border-border bg-surface p-2.5 shadow-xl backdrop-blur-md">
           {POPULAR_EMOJIS.map((emoji) => (

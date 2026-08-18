@@ -215,6 +215,17 @@ export const useChatStore = create(
          
          socket.off("newMessage", get()._handleGlobalNewMessage);
          socket.on("newMessage", get()._handleGlobalNewMessage);
+
+         socket.off("connect", get()._handleSocketConnect);
+         socket.on("connect", get()._handleSocketConnect);
+      },
+
+      _handleSocketConnect: () => {
+         get().getConversations();
+         const activeId = get().activeConversationId;
+         if (activeId) {
+           get().getMessages(activeId);
+         }
       },
 
       _handleGlobalNewMessage: (newMessage) => {
@@ -225,6 +236,7 @@ export const useChatStore = create(
          const socket = useAuthStore.getState().socket;
          if (socket) {
            socket.off("newMessage", get()._handleGlobalNewMessage);
+           socket.off("connect", get()._handleSocketConnect);
          }
       },
 

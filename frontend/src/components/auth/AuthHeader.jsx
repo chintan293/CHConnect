@@ -1,7 +1,6 @@
 import { APP_NAME, AppLogo } from "../AppLogo.jsx";
 import { ThemePresetPicker } from "../ThemePresetPicker.jsx";
 import { ThemeToggle } from "../ThemeToggle.jsx";
-import { WallpaperPicker } from "../WallpaperPicker.jsx";
 
 function AuthHeader() {
   return (
@@ -16,8 +15,6 @@ function AuthHeader() {
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5">
-        <WallpaperPicker />
-
         <ThemePresetPicker />
 
         <ThemeToggle />

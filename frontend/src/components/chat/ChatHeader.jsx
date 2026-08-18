@@ -6,7 +6,6 @@ import { AvatarWithOnlineIndicator } from "./AvatarWithOnlineIndicator";
 import { ThemePresetPicker } from "../ThemePresetPicker";
 
 import { ThemeToggle } from "../ThemeToggle";
-import { WallpaperPicker } from "../WallpaperPicker";
 
 import { useChatStore } from "../../store/useChatStore";
 import { useSelectedConversation } from "../../hooks/useSelectedConversation";
@@ -74,7 +73,6 @@ export function ChatHeader() {
 
       <div className="ml-auto flex max-w-full shrink-0 flex-wrap items-center justify-end gap-0.5 sm:gap-1">
         <div className="hidden min-[400px]:contents">
-          <WallpaperPicker />
           <ThemePresetPicker />
         </div>
 
