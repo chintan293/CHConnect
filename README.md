@@ -1,237 +1,223 @@
-# 💬 iMessage Web - Real-Time Chat & Messaging Application
+# 💬 iMessage Web — Real-Time Chat & Messaging Application
 
-A full-stack, real-time messaging application built with **React 19**, **Vite**, **Express.js (v5)**, **MongoDB**, **Socket.io**, and **Clerk Authentication**. Styled with modern **Tailwind CSS v4** and **HeroUI**, featuring multi-theme support (WhatsApp & iMessage aesthetics), rich media sharing (Photos, Videos, Audio Voice Notes), read receipts, typing indicators, and containerized deployment with Docker.
+A full-stack real-time messaging application built with **React 19, Vite, Express.js 5, MongoDB, Socket.io, and Clerk**.
 
----
+The application supports real-time messaging, media sharing, read receipts, typing indicators, voice notes, multiple themes, and Docker-based deployment.
 
-## 🌟 Key Features
+## ✨ Features
 
-- **🔐 Secure Authentication**: Multi-provider login powered by **Clerk** with automatic database synchronization via Webhooks.
-- **⚡ Real-Time Messaging**: Instant bidirectional messaging powered by **Socket.io**.
-- **✅ Read Receipts & Delivery Status**:
-  - Single Grey Tick (`✓`) - Message Sent
-  - Double Grey Tick (`✓✓`) - Message Delivered
-  - Double Blue Tick (`✓✓`) - Message Read / Seen
-- **📸 Rich Media Sharing**:
-  - **Photos**: Upload and preview images in an interactive lightbox modal.
-  - **Videos**: Stream and play videos using native custom player controls.
-  - **Audio & Voice Notes**: Record audio clips directly from the composer or upload audio files with a custom playback controller (play/pause, duration, progress tracking).
-  - Media storage powered by **ImageKit CDN**.
-- **⌨️ Real-Time Typing Indicators**: See when the recipient is actively typing.
-- **😃 Interactive Emoji Picker**: Integrated emoji selector and quick reaction bar.
-- **🎨 Theme Engine**: Customizable UI themes including **WhatsApp Emerald**, **iMessage Blue**, Dark, Light, and Glassmorphic presets.
-- **📱 Responsive & Modern UI**: Built with React 19, HeroUI, Lucide Icons, and React Hot Toast notifications.
-- **🐳 Docker Ready**: Multi-stage production Dockerfile combining Vite static build and Express API service into a unified runner container.
-
----
+* 🔐 **Authentication** — Clerk authentication with webhook-based user synchronization
+* ⚡ **Real-time Messaging** — Instant messaging using Socket.io
+* ✅ **Read Receipts** — Sent, delivered, and seen message states
+* ⌨️ **Typing Indicators** — Real-time typing status
+* 📸 **Media Sharing** — Images, videos, and audio messages
+* 🎙️ **Voice Notes** — Record and play audio messages
+* 😃 **Emoji & Reactions** — Emoji picker and message reactions
+* 🎨 **Theme Support** — WhatsApp, iMessage, Dark, Light, and Glassmorphic themes
+* 📱 **Responsive UI** — Optimized for desktop and mobile
+* 🐳 **Docker Ready** — Multi-stage production Docker setup
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/), [HeroUI](https://heroui.com/)
-- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
-- **Icons & UI**: Lucide React, React Hot Toast
-- **Auth**: [@clerk/react](https://clerk.com/)
-- **Real-Time Client**: Socket.io-client
+
+* React 19
+* Vite
+* Tailwind CSS v4
+* HeroUI
+* Zustand
+* Socket.io Client
+* Lucide React
+* React Hot Toast
+* Clerk React
 
 ### Backend
-- **Runtime & Server**: Node.js (ES Modules) + [Express.js v5](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) with [Mongoose](https://mongoosejs.com/)
-- **Real-Time Server**: [Socket.io](https://socket.io/)
-- **Auth Middleware**: [@clerk/express](https://clerk.com/) & Webhook integration
-- **Media CDN & Uploads**: Multer + [@imagekit/nodejs](https://imagekit.io/)
-- **Background Tasks**: `cron` (Heartbeat / Keep-Alive)
 
----
+* Node.js
+* Express.js 5
+* Socket.io
+* MongoDB
+* Mongoose
+* Clerk Express
+* Multer
+* ImageKit
 
 ## 📁 Project Structure
 
-```
+```text
 IMESSAGE/
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/      # Route controllers (Auth, Message)
-│   │   ├── lib/              # Utility configurations (MongoDB, Socket.io, ImageKit, Cron)
-│   │   ├── middleware/       # Multer media upload & validation middleware
-│   │   ├── models/           # Mongoose schemas (User, Message)
-│   │   ├── routes/           # Express API route declarations
-│   │   ├── seeds/            # Database seed script
-│   │   ├── webhooks/         # Clerk Webhook handlers
-│   │   └── index.js          # Express app entry point
+│   │   ├── controllers/
+│   │   ├── lib/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── seeds/
+│   │   ├── webhooks/
+│   │   └── index.js
 │   └── package.json
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # UI Components (Auth, Chat, Layout, Modals)
-│   │   ├── data/             # Theme configuration presets
-│   │   ├── hooks/            # Custom React hooks
-│   │   ├── store/            # State management with Zustand
-│   │   ├── styles/           # Global CSS & Tailwind stylesheets
-│   │   ├── App.jsx           # Main Application Router
-│   │   └── main.jsx          # Vite React entry point
+│   │   ├── components/
+│   │   ├── data/
+│   │   ├── hooks/
+│   │   ├── store/
+│   │   ├── styles/
+│   │   ├── App.jsx
+│   │   └── main.jsx
 │   └── package.json
 │
-├── Dockerfile                # Multi-stage production container script
-└── package.json              # Monorepo root configuration
+├── Dockerfile
+└── package.json
 ```
-
----
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-Ensure you have the following installed on your local environment:
-- [Node.js](https://nodejs.org/) (v18+ recommended, v22 support)
-- [npm](https://www.npmjs.com/)
-- [MongoDB](https://www.mongodb.com/) (Local instance or MongoDB Atlas cluster)
-- [Clerk Account](https://clerk.com/) (For Auth keys)
-- [ImageKit Account](https://imagekit.io/) (For Media uploads)
+* Node.js 18+
+* npm
+* MongoDB or MongoDB Atlas
+* Clerk account
+* ImageKit account
 
----
+### 1. Clone the repository
 
-### 🔑 Environment Variables Setup
+```bash
+git clone https://github.com/chintan293/CHConnect.git
+cd IMESSAGE
+```
 
-#### 1. Backend (`backend/.env`)
+### 2. Install dependencies
 
-Create a `.env` file inside the `backend/` directory:
+```bash
+cd backend
+npm install
+
+cd ../frontend
+npm install
+```
+
+### 3. Configure environment variables
+
+Create `backend/.env`:
 
 ```env
 PORT=3001
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/imessage?retryWrites=true&w=majority
-CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-CLERK_WEBHOOK_SECRET=whsec_...
-IMAGEKIT_PRIVATE_KEY=private_...
+MONGO_URI=your_mongodb_connection_string
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+CLERK_WEBHOOK_SECRET=your_clerk_webhook_secret
+IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
 FRONTEND_URL=http://localhost:5173
 NODE_ENV=development
 ```
 
-#### 2. Frontend (`frontend/.env`)
-
-Create a `.env` file inside the `frontend/` directory:
+Create `frontend/.env`:
 
 ```env
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 VITE_API_URL=http://localhost:3001
 ```
 
----
+> Never commit real secrets or `.env` files to GitHub.
 
-### 💻 Local Installation & Setup
+### 4. Run the application
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/copy_imessage.git
-   cd copy_imessage/IMESSAGE
-   ```
+Start the backend:
 
-2. **Install Backend Dependencies**:
-   ```bash
-   cd backend
-   npm install
-   ```
+```bash
+cd backend
+npm run dev
+```
 
-3. **Install Frontend Dependencies**:
-   ```bash
-   cd ../frontend
-   npm install
-   ```
+Start the frontend in another terminal:
 
-4. **Seed Database (Optional)**:
-   To populate test users into MongoDB, run from the `backend/` folder:
-   ```bash
-   npm run db:seed
-   ```
+```bash
+cd frontend
+npm run dev
+```
 
-5. **Run Development Servers**:
+Open:
 
-   - **Backend** (Starts Express API & Socket server on `http://localhost:3001`):
-     ```bash
-     cd backend
-     npm run dev
-     ```
+```text
+http://localhost:5173
+```
 
-   - **Frontend** (Starts Vite dev server on `http://localhost:5173`):
-     ```bash
-     cd frontend
-     npm run dev
-     ```
+## 📡 API Endpoints
 
-6. Open your browser and navigate to `http://localhost:5173`.
+### Authentication
 
----
+| Method | Endpoint       | Description            |
+| ------ | -------------- | ---------------------- |
+| GET    | `/api/auth/me` | Get authenticated user |
 
-## 🐳 Docker Deployment
+### Messages
 
-The application includes a production-ready multi-stage `Dockerfile` that packages both the Vite SPA frontend and Express backend into a single Node runtime image.
+| Method | Endpoint                      | Description             |
+| ------ | ----------------------------- | ----------------------- |
+| GET    | `/api/messages/conversations` | Get conversations       |
+| GET    | `/api/messages/:id`           | Get chat history        |
+| POST   | `/api/messages/send/:id`      | Send text/media message |
+| PUT    | `/api/messages/read/:id`      | Mark messages as read   |
 
-### Building & Running with Docker
+### Webhooks
 
-1. **Build the Docker Image**:
-   ```bash
-   docker build -t imessage-app \
-     --build-arg VITE_CLERK_PUBLISHABLE_KEY=pk_test_... \
-     .
-   ```
+| Method | Endpoint              | Description             |
+| ------ | --------------------- | ----------------------- |
+| POST   | `/api/webhooks/clerk` | Synchronize Clerk users |
 
-2. **Run the Container**:
-   ```bash
-   docker run -d \
-     -p 3001:3001 \
-     -e MONGO_URI="mongodb+srv://..." \
-     -e CLERK_PUBLISHABLE_KEY="pk_test_..." \
-     -e CLERK_SECRET_KEY="sk_test_..." \
-     -e IMAGEKIT_PRIVATE_KEY="private_..." \
-     --name imessage-container \
-     imessage-app
-   ```
+## 🔌 Socket.io Events
 
-3. Access the application at `http://localhost:3001`.
+| Event            | Direction       | Purpose                      |
+| ---------------- | --------------- | ---------------------------- |
+| `getOnlineUsers` | Server → Client | Get online users             |
+| `newMessage`     | Server → Client | Receive new message          |
+| `typing`         | Client ↔ Server | Typing indicator             |
+| `stopTyping`     | Client ↔ Server | Stop typing indicator        |
+| `markAsRead`     | Client → Server | Mark messages as read        |
+| `messagesRead`   | Server → Client | Notify sender of read status |
 
----
+## 🐳 Docker
 
-## 📡 API Endpoints Summary
+Build the production image:
 
-### Auth Routes (`/api/auth`)
-- `GET /api/auth/me` - Fetch authenticated user profile
+```bash
+docker build -t imessage-app .
+```
 
-### Message Routes (`/api/messages`)
-- `GET /api/messages/conversations` - Fetch conversation list
-- `GET /api/messages/:id` - Fetch chat history with a specific user
-- `POST /api/messages/send/:id` - Send text or media message (Multer upload)
-- `PUT /api/messages/read/:id` - Mark unread messages in conversation as read
+Run the container:
 
-### Webhooks (`/api/webhooks`)
-- `POST /api/webhooks/clerk` - Clerk webhook sync endpoint for user creation/updates
+```bash
+docker run -d \
+  -p 3001:3001 \
+  --env-file backend/.env \
+  --name imessage-container \
+  imessage-app
+```
 
----
+Then open:
 
-## 🔌 Socket.io Real-Time Events
-
-| Event Name | Direction | Description |
-|---|---|---|
-| `getOnlineUsers` | Server ➔ Client | Emits active user IDs online |
-| `newMessage` | Server ➔ Client | Delivers new incoming message |
-| `typing` | Client ⇄ Server | Notifies peer that user is typing |
-| `stopTyping` | Client ⇄ Server | Notifies peer that user stopped typing |
-| `markAsRead` | Client ➔ Server | Triggers read receipt update for conversation |
-| `messagesRead` | Server ➔ Client | Notifies sender that messages were read |
-
----
+```text
+http://localhost:3001
+```
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to improve this project:
-1. Fork the Repository
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Commit and push your changes
 5. Open a Pull Request
-
----
 
 ## 📄 License
 
 This project is licensed under the **ISC License**.
+
+## 👨‍💻 Author
+
+**Chintan Hadiya**
+
+[GitHub](https://github.com/chintan293)
